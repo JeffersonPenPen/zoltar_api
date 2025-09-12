@@ -1,0 +1,92 @@
+[
+    {
+        "quote": "A imaginação é mais importante que o conhecimento.",
+        "source": "Albert Einstein",
+        "tags": [
+            "ciência",
+            "imaginação",
+            "conhecimento"
+        ]
+    },
+    {
+        "quote": "Penso, logo existo.",
+        "source": "René Descartes",
+        "tags": [
+            "filosofia",
+            "existência",
+            "pensamento"
+        ]
+    },
+    {
+        "quote": "Conhece-te a ti mesmo.",
+        "source": "Socrates",
+        "tags": [
+            "filosofia",
+            "self",
+            "sabedoria"
+        ]
+    },
+    {
+        "quote": "O que sabemos é uma gota, o que ignoramos é um oceano.",
+        "source": "Isaac Newton",
+        "tags": [
+            "ciência",
+            "ignorância",
+            "sabedoria"
+        ]
+    },
+    {
+        "quote": "A felicidade depende de nós mesmos.",
+        "source": "Aristóteles",
+        "tags": [
+            "filosofia",
+            "felicidade",
+            "self"
+        ]
+    },
+    {
+        "quote": "Eu sou a fonte da minha própria energia.",
+        "source": "Deepak Chopra",
+        "tags": [
+            "self help",
+            "energia",
+            "autoconhecimento"
+        ]
+    },
+    {
+        "quote": "O universo não é apenas mais estranho do que imaginamos, é mais estranho do que podemos imaginar.",
+        "source": "Werner Heisenberg",
+        "tags": [
+            "ciência",
+            "universo",
+            "paradoxo"
+        ]
+    },
+    {
+        "quote": "A vida não é medida pelo número de vezes que respiramos, mas pelos momentos que nos tiram a respiração.",
+        "source": "George Carlin",
+        "tags": [
+            "vida",
+            "experiência",
+            "momento"
+        ]
+    },
+    {
+        "quote": "As estrelas brilham para mostrar que, mesmo na escuridão, há luz.",
+        "source": "Desconhecido",
+        "tags": [
+            "astrologia",
+            "universo",
+            "esperança"
+        ]
+    },
+    {
+        "quote": "O que você resiste, persiste.",
+        "source": "Carl Jung",
+        "tags": [
+            "psicologia",
+            "resistência",
+            "mentalidade"
+        ]
+    }
+]

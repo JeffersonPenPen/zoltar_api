@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "functions": {
+    "api/quote.js": {
+      "maxDuration": 30
+    },
+    "api/download-quote.js": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "FONTCONFIG_FILE": "/var/task/fonts/fonts.conf"
+  }
+}

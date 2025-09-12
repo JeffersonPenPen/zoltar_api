@@ -1,0 +1,12 @@
+{
+  "name": "zoltar-quote-api",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "sharp": "^0.34.3",
+    "@vercel/kv": "^3.0.0"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}
