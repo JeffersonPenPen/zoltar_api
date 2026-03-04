@@ -1,9 +1,21 @@
-import { kv } from '@vercel/kv';
-import quotes from '../quotes.json';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const quotes = require('../quotes.json');
+
+let kv = null;
+try {
+    const kvModule = await import('@vercel/kv');
+    kv = kvModule.kv;
+} catch (e) {
+    console.warn('KV not available, running without cache');
+}
 import sharp from 'sharp';
 import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const FORTUNE_TEMPLATE_PATH = './public/FilipetaQuote.png';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const FORTUNE_TEMPLATE_PATH = path.join(__dirname, '..', 'public', 'FilipetaQuote.png');
 
 async function getLocalImageBuffer() {
     try {
@@ -36,7 +48,7 @@ function breakText(text, maxChars) {
 
 function createDownloadTextSvg(quote, author) {
     const config = {
-        width: 250,
+        width: 240,
         height: 400,
         fontSize: 18,
         authorFontSize: 16,
@@ -81,16 +93,26 @@ export default async function handler(request, response) {
     const ip = (request.headers['x-forwarded-for'] || '127.0.0.1').split(',')[0].trim();
 
     try {
-        const lastQuote = await kv.get(`last-quote:${ip}`);
-        const finalQuote = lastQuote || quotes[0];
+        let finalQuote = null;
+        if (kv) {
+            try {
+                finalQuote = await kv.get(`last-quote:${ip}`);
+            } catch (kvErr) {
+                console.warn('KV get failed:', kvErr.message);
+            }
+        }
+        if (!finalQuote) {
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            finalQuote = quotes[randomIndex];
+        }
 
         const baseImageBuffer = await getLocalImageBuffer();
         const textSvg = createDownloadTextSvg(finalQuote.quote, finalQuote.source);
         const textPngBuffer = await sharp(Buffer.from(textSvg)).png().toBuffer();
 
         const { width: textWidth, height: textHeight } = await sharp(textPngBuffer).metadata();
-        const left = Math.round((250 - textWidth) / 2);
-        const top = Math.round((400 - textHeight) / 2);
+        const left = Math.round((248 - textWidth) / 2);
+        const top = Math.round((494 - textHeight) / 2);
         
         const finalImageBuffer = await sharp(baseImageBuffer)
             .composite([{

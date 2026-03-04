@@ -2,10 +2,12 @@
   "version": 2,
   "functions": {
     "api/quote.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "public/**"
     },
     "api/download-quote.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "public/**"
     }
   }
 }
