@@ -94,11 +94,24 @@ export default async function handler(request, response) {
 
     try {
         let finalQuote = null;
-        if (kv) {
-            try {
-                finalQuote = await kv.get(`last-quote:${ip}`);
-            } catch (kvErr) {
-                console.warn('KV get failed:', kvErr.message);
+
+        // If index is provided (from fortune page link), use that specific quote
+        const indexParam = request.query?.index;
+        if (indexParam !== undefined && indexParam !== null) {
+            const idx = parseInt(indexParam, 10);
+            if (idx >= 0 && idx < quotes.length) {
+                finalQuote = quotes[idx];
+            }
+        }
+
+        // Fallback: try KV, then random
+        if (!finalQuote) {
+            if (kv) {
+                try {
+                    finalQuote = await kv.get(`last-quote:${ip}`);
+                } catch (kvErr) {
+                    console.warn('KV get failed:', kvErr.message);
+                }
             }
         }
         if (!finalQuote) {
