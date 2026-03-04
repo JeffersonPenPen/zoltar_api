@@ -119,7 +119,7 @@ export default async function handler(request, response) {
         const finalImageBuffer = await sharp(baseImageBuffer)
             .composite([{
                 input: textPngBuffer,
-                top: top + 100,
+                top: top,
                 left: left
             }])
             .png().toBuffer();
