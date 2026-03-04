@@ -1,26 +1,18 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const quotes = require('../quotes.json');
-import sharp from 'sharp';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 let kv = null;
 try {
     const kvModule = await import('@vercel/kv');
     kv = kvModule.kv;
 } catch (e) {
-    console.warn('KV not available, running without cache');
+    console.warn('KV not available');
 }
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FORTUNE_TEMPLATE_PATH = path.join(__dirname, '..', 'public', 'FilipetaQuote.png');
-
-async function getLocalImageBuffer() {
-    const buffer = await fs.readFile(FORTUNE_TEMPLATE_PATH);
-    return buffer;
-}
+const BG_IMAGE_URL = 'https://raw.githubusercontent.com/JeffersonPenPen/zoltar_api/main/public/FilipetaQuote.png';
+const IMG_WIDTH = 248;
+const IMG_HEIGHT = 494;
 
 function breakText(text, maxChars) {
     const words = text.split(' ');
@@ -39,45 +31,30 @@ function breakText(text, maxChars) {
     return lines;
 }
 
-function createTextSvg(quote, author) {
-    const config = {
-        width: 240,
-        height: 400,
-        fontSize: 18,
-        authorFontSize: 16,
-        maxChars: 22
-    };
+function createSvg(quote, author) {
+    const fontSize = 16;
+    const authorFontSize = 14;
+    const maxChars = 20;
+    const lineSpacing = fontSize * 1.4;
 
-    const lines = breakText(quote, config.maxChars);
+    const lines = breakText(quote, maxChars);
     const authorLine = `- ${author}`;
-    const lineSpacing = config.fontSize * 1.2;
-    const totalHeight = (lines.length * lineSpacing) + (config.authorFontSize * 1.5);
-    const startY = (config.height / 2) - (totalHeight / 2) + (config.fontSize / 2);
+
+    const totalTextHeight = (lines.length * lineSpacing) + (authorFontSize * 1.5);
+    const startY = (IMG_HEIGHT / 2) - (totalTextHeight / 2);
 
     let textElements = '';
     lines.forEach((line, index) => {
         const y = startY + (index * lineSpacing);
-        textElements += `<text x="50%" y="${y}" font-size="${config.fontSize}px" class="quote">${line}</text>\n`;
+        textElements += `    <text x="${IMG_WIDTH / 2}" y="${y}" font-size="${fontSize}" font-family="Georgia, serif" fill="#2c2c2c" text-anchor="middle" dominant-baseline="middle">${line}</text>\n`;
     });
 
-    const authorY = startY + (lines.length * lineSpacing);
-    textElements += `<text x="50%" y="${authorY}" font-size="${config.authorFontSize}px" class="author">${authorLine}</text>\n`;
+    const authorY = startY + (lines.length * lineSpacing) + 5;
+    textElements += `    <text x="${IMG_WIDTH / 2}" y="${authorY}" font-size="${authorFontSize}" font-family="Georgia, serif" fill="#333" text-anchor="middle" dominant-baseline="middle" font-style="italic">${authorLine}</text>\n`;
 
-    return `<svg width="${config.width}" height="${config.height}" xmlns="http://www.w3.org/2000/svg">
-        <style>
-            text {
-                font-family: 'Special Elite', serif, sans-serif;
-                fill: #2c2c2c;
-                text-anchor: middle;
-                dominant-baseline: middle;
-            }
-            .author {
-                font-style: italic;
-                fill: #333;
-            }
-        </style>
-        ${textElements}
-    </svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${IMG_WIDTH}" height="${IMG_HEIGHT}" viewBox="0 0 ${IMG_WIDTH} ${IMG_HEIGHT}">
+  <image href="${BG_IMAGE_URL}" width="${IMG_WIDTH}" height="${IMG_HEIGHT}"/>
+${textElements}</svg>`;
 }
 
 export default async function handler(request, response) {
@@ -86,7 +63,6 @@ export default async function handler(request, response) {
     try {
         let finalQuote = null;
 
-        // Tentar KV para lock 24h (graceful fallback se KV indisponível)
         if (kv) {
             try {
                 finalQuote = await kv.get(`last-quote:${ip}`);
@@ -108,28 +84,14 @@ export default async function handler(request, response) {
             }
         }
 
-        const baseImageBuffer = await getLocalImageBuffer();
-        const textSvg = createTextSvg(finalQuote.quote, finalQuote.source);
-        const textPngBuffer = await sharp(Buffer.from(textSvg)).png().toBuffer();
+        const svg = createSvg(finalQuote.quote, finalQuote.source);
 
-        const { width: textWidth, height: textHeight } = await sharp(textPngBuffer).metadata();
-        const left = Math.round((248 - textWidth) / 2);
-        const top = Math.round((494 - textHeight) / 2);
-
-        const finalImageBuffer = await sharp(baseImageBuffer)
-            .composite([{
-                input: textPngBuffer,
-                top: top,
-                left: left
-            }])
-            .png().toBuffer();
-
-        response.setHeader('Content-Type', 'image/png');
+        response.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
         response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        return response.status(200).end(finalImageBuffer);
+        return response.status(200).send(svg);
 
     } catch (error) {
         console.error("ERRO NO QUOTE:", error);
-        return response.status(500).json({ error: error.message, stack: error.stack });
+        return response.status(500).json({ error: error.message });
     }
 }
