@@ -1,6 +1,14 @@
 import { createRequire } from 'module';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 const require = createRequire(import.meta.url);
 const quotes = require('../quotes.json');
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const filipetaPath = path.join(__dirname, '..', 'public', 'FilipetaQuote.png');
+const filipetaBase64 = fs.readFileSync(filipetaPath).toString('base64');
 
 let kv = null;
 try {
@@ -10,7 +18,6 @@ try {
     console.warn('KV not available');
 }
 
-const BG_IMAGE_URL = 'https://raw.githubusercontent.com/JeffersonPenPen/zoltar_api/main/public/FilipetaQuote.png';
 const IMG_WIDTH = 248;
 const IMG_HEIGHT = 494;
 
@@ -52,8 +59,8 @@ function createSvg(quote, author) {
     const authorY = startY + (lines.length * lineSpacing) + 5;
     textElements += `    <text x="${IMG_WIDTH / 2}" y="${authorY}" font-size="${authorFontSize}" font-family="Georgia, serif" fill="#333" text-anchor="middle" dominant-baseline="middle" font-style="italic">${authorLine}</text>\n`;
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${IMG_WIDTH}" height="${IMG_HEIGHT}" viewBox="0 0 ${IMG_WIDTH} ${IMG_HEIGHT}">
-  <image href="${BG_IMAGE_URL}" width="${IMG_WIDTH}" height="${IMG_HEIGHT}"/>
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${IMG_WIDTH}" height="${IMG_HEIGHT}" viewBox="0 0 ${IMG_WIDTH} ${IMG_HEIGHT}">
+  <image href="data:image/png;base64,${filipetaBase64}" width="${IMG_WIDTH}" height="${IMG_HEIGHT}"/>
 ${textElements}</svg>`;
 }
 
