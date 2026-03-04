@@ -8,6 +8,10 @@
     "api/download-quote.js": {
       "maxDuration": 30,
       "includeFiles": "{public/**,fonts/**}"
+    },
+    "api/fortune.js": {
+      "maxDuration": 30,
+      "includeFiles": "{public/**,fonts/**}"
     }
   },
   "env": {
