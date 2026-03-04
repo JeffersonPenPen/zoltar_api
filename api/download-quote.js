@@ -85,7 +85,7 @@ export default async function handler(request, response) {
         const finalQuote = lastQuote || quotes[0];
 
         const baseImageBuffer = await getLocalImageBuffer();
-        const textSvg = createDownloadTextSvg(finalQuote.text, finalQuote.author);
+        const textSvg = createDownloadTextSvg(finalQuote.quote, finalQuote.source);
         const textPngBuffer = await sharp(Buffer.from(textSvg)).png().toBuffer();
 
         const { width: textWidth, height: textHeight } = await sharp(textPngBuffer).metadata();
