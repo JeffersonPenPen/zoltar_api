@@ -3,11 +3,14 @@
   "functions": {
     "api/quote.js": {
       "maxDuration": 30,
-      "includeFiles": "public/**"
+      "includeFiles": "{public/**,fonts/**}"
     },
     "api/download-quote.js": {
       "maxDuration": 30,
-      "includeFiles": "public/**"
+      "includeFiles": "{public/**,fonts/**}"
     }
+  },
+  "env": {
+    "FONTCONFIG_FILE": "/var/task/fonts/fonts.conf"
   }
 }
