@@ -1,14 +1,7 @@
 import { createRequire } from 'module';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
 const quotes = require('../quotes.json');
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const filipetaPath = path.join(__dirname, '..', 'public', 'FilipetaQuote.png');
-const filipetaBase64 = fs.readFileSync(filipetaPath).toString('base64');
 
 let kv = null;
 try {
@@ -18,8 +11,8 @@ try {
     console.warn('KV not available');
 }
 
-const IMG_WIDTH = 248;
-const IMG_HEIGHT = 494;
+const WIDTH = 280;
+const HEIGHT = 460;
 
 function breakText(text, maxChars) {
     const words = text.split(' ');
@@ -38,30 +31,52 @@ function breakText(text, maxChars) {
     return lines;
 }
 
+function escapeXml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function createSvg(quote, author) {
-    const fontSize = 16;
-    const authorFontSize = 14;
-    const maxChars = 20;
-    const lineSpacing = fontSize * 1.4;
+    const fontSize = 15;
+    const authorFontSize = 12;
+    const maxChars = 24;
+    const lineSpacing = fontSize * 1.6;
 
-    const lines = breakText(quote, maxChars);
-    const authorLine = `- ${author}`;
+    const lines = breakText(escapeXml(quote), maxChars);
+    const authorLine = `— ${escapeXml(author)}`;
 
-    const totalTextHeight = (lines.length * lineSpacing) + (authorFontSize * 1.5);
-    const startY = (IMG_HEIGHT / 2) - (totalTextHeight / 2);
+    const totalTextHeight = (lines.length * lineSpacing) + (authorFontSize * 2.5);
+    const startY = (HEIGHT / 2) - (totalTextHeight / 2) + fontSize;
 
     let textElements = '';
     lines.forEach((line, index) => {
         const y = startY + (index * lineSpacing);
-        textElements += `    <text x="${IMG_WIDTH / 2}" y="${y}" font-size="${fontSize}" font-family="Georgia, serif" fill="#2c2c2c" text-anchor="middle" dominant-baseline="middle">${line}</text>\n`;
+        textElements += `    <text x="${WIDTH / 2}" y="${y}" class="q">${line}</text>\n`;
     });
 
-    const authorY = startY + (lines.length * lineSpacing) + 5;
-    textElements += `    <text x="${IMG_WIDTH / 2}" y="${authorY}" font-size="${authorFontSize}" font-family="Georgia, serif" fill="#333" text-anchor="middle" dominant-baseline="middle" font-style="italic">${authorLine}</text>\n`;
+    const authorY = startY + (lines.length * lineSpacing) + 14;
+    textElements += `    <text x="${WIDTH / 2}" y="${authorY}" class="a">${authorLine}</text>\n`;
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${IMG_WIDTH}" height="${IMG_HEIGHT}" viewBox="0 0 ${IMG_WIDTH} ${IMG_HEIGHT}">
-  <image href="data:image/png;base64,${filipetaBase64}" width="${IMG_WIDTH}" height="${IMG_HEIGHT}"/>
-${textElements}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7edd0"/>
+      <stop offset="100%" stop-color="#e8d5a8"/>
+    </linearGradient>
+  </defs>
+  <rect width="${WIDTH}" height="${HEIGHT}" fill="#1a1a2e"/>
+  <rect x="12" y="12" width="${WIDTH - 24}" height="${HEIGHT - 24}" rx="6" fill="url(#bg)" stroke="#b8963a" stroke-width="1.5"/>
+  <rect x="20" y="20" width="${WIDTH - 40}" height="${HEIGHT - 40}" rx="3" fill="none" stroke="#c9a84c" stroke-width="0.7" stroke-dasharray="5,4"/>
+  <text x="${WIDTH / 2}" y="58" text-anchor="middle" font-size="24" fill="#8b6914" opacity="0.7" font-family="serif">&#10022;</text>
+  <text x="${WIDTH / 2}" y="82" text-anchor="middle" font-size="10" fill="#8b6914" font-family="Georgia,serif" letter-spacing="4">SUA SORTE</text>
+  <line x1="55" y1="94" x2="${WIDTH - 55}" y2="94" stroke="#c9a84c" stroke-width="0.6" opacity="0.5"/>
+  <style>
+    .q { font-family: Georgia,serif; font-size: ${fontSize}px; fill: #3d2b1f; text-anchor: middle; }
+    .a { font-family: Georgia,serif; font-size: ${authorFontSize}px; fill: #6b4c2a; text-anchor: middle; font-style: italic; }
+  </style>
+${textElements}
+  <line x1="55" y1="${HEIGHT - 65}" x2="${WIDTH - 55}" y2="${HEIGHT - 65}" stroke="#c9a84c" stroke-width="0.6" opacity="0.5"/>
+  <text x="${WIDTH / 2}" y="${HEIGHT - 38}" text-anchor="middle" font-size="18" fill="#8b6914" opacity="0.5" font-family="serif">&#9790;</text>
+</svg>`;
 }
 
 export default async function handler(request, response) {
@@ -95,6 +110,8 @@ export default async function handler(request, response) {
 
         response.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
         response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        response.setHeader('Pragma', 'no-cache');
+        response.setHeader('Expires', '0');
         return response.status(200).send(svg);
 
     } catch (error) {
