@@ -36,46 +36,106 @@ function escapeXml(str) {
 }
 
 function createSvg(quote, author) {
-    const fontSize = 15;
-    const authorFontSize = 12;
-    const maxChars = 24;
-    const lineSpacing = fontSize * 1.6;
+    const cx = WIDTH / 2;
+    const fontSize = 13;
+    const authorFontSize = 11;
+    const maxChars = 26;
+    const lineSpacing = fontSize * 1.5;
 
     const lines = breakText(escapeXml(quote), maxChars);
     const authorLine = `— ${escapeXml(author)}`;
 
-    const totalTextHeight = (lines.length * lineSpacing) + (authorFontSize * 2.5);
-    const startY = (HEIGHT / 2) - (totalTextHeight / 2) + fontSize;
+    const totalTextHeight = (lines.length * lineSpacing) + (authorFontSize * 2);
+    const textCenterY = HEIGHT / 2 + 10;
+    const startY = textCenterY - (totalTextHeight / 2) + fontSize;
 
     let textElements = '';
     lines.forEach((line, index) => {
         const y = startY + (index * lineSpacing);
-        textElements += `    <text x="${WIDTH / 2}" y="${y}" class="q">${line}</text>\n`;
+        textElements += `    <text x="${cx}" y="${y}" class="q">${line}</text>\n`;
     });
 
-    const authorY = startY + (lines.length * lineSpacing) + 14;
-    textElements += `    <text x="${WIDTH / 2}" y="${authorY}" class="a">${authorLine}</text>\n`;
+    const authorY = startY + (lines.length * lineSpacing) + 10;
+    textElements += `    <text x="${cx}" y="${authorY}" class="a">${authorLine}</text>\n`;
 
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f7edd0"/>
-      <stop offset="100%" stop-color="#e8d5a8"/>
+      <stop offset="0%" stop-color="#f5e6a8"/>
+      <stop offset="50%" stop-color="#f0dfa0"/>
+      <stop offset="100%" stop-color="#e8d490"/>
     </linearGradient>
+    <clipPath id="card">
+      <rect x="8" y="8" width="${WIDTH - 16}" height="${HEIGHT - 16}" rx="4"/>
+    </clipPath>
   </defs>
-  <rect width="${WIDTH}" height="${HEIGHT}" fill="#1a1a2e"/>
-  <rect x="12" y="12" width="${WIDTH - 24}" height="${HEIGHT - 24}" rx="6" fill="url(#bg)" stroke="#b8963a" stroke-width="1.5"/>
-  <rect x="20" y="20" width="${WIDTH - 40}" height="${HEIGHT - 40}" rx="3" fill="none" stroke="#c9a84c" stroke-width="0.7" stroke-dasharray="5,4"/>
-  <text x="${WIDTH / 2}" y="58" text-anchor="middle" font-size="24" fill="#8b6914" opacity="0.7" font-family="serif">&#10022;</text>
-  <text x="${WIDTH / 2}" y="82" text-anchor="middle" font-size="10" fill="#8b6914" font-family="Georgia,serif" letter-spacing="4">SUA SORTE</text>
-  <line x1="55" y1="94" x2="${WIDTH - 55}" y2="94" stroke="#c9a84c" stroke-width="0.6" opacity="0.5"/>
+
+  <!-- Dark background -->
+  <rect width="${WIDTH}" height="${HEIGHT}" fill="#1a1a1a"/>
+
+  <!-- Card body - yellow/cream like real filipeta -->
+  <rect x="8" y="8" width="${WIDTH - 16}" height="${HEIGHT - 16}" rx="4" fill="url(#bg)" stroke="#2a2008" stroke-width="2.5"/>
+
+  <!-- Inner border frame -->
+  <rect x="16" y="16" width="${WIDTH - 32}" height="${HEIGHT - 32}" rx="2" fill="none" stroke="#2a2008" stroke-width="1.2"/>
+
+  <!-- Top thick decorative bar -->
+  <rect x="22" y="22" width="${WIDTH - 44}" height="6" fill="#2a2008"/>
+  <rect x="22" y="32" width="${WIDTH - 44}" height="2" fill="#2a2008"/>
+
+  <!-- Bottom thick decorative bar -->
+  <rect x="22" y="${HEIGHT - 28}" width="${WIDTH - 44}" height="6" fill="#2a2008"/>
+  <rect x="22" y="${HEIGHT - 34}" width="${WIDTH - 44}" height="2" fill="#2a2008"/>
+
+  <!-- Corner ornaments - top left -->
+  <line x1="16" y1="38" x2="40" y2="38" stroke="#2a2008" stroke-width="1"/>
+  <line x1="38" y1="16" x2="38" y2="40" stroke="#2a2008" stroke-width="1"/>
+  <rect x="34" y="34" width="8" height="8" fill="#2a2008"/>
+
+  <!-- Corner ornaments - top right -->
+  <line x1="${WIDTH - 16}" y1="38" x2="${WIDTH - 40}" y2="38" stroke="#2a2008" stroke-width="1"/>
+  <line x1="${WIDTH - 38}" y1="16" x2="${WIDTH - 38}" y2="40" stroke="#2a2008" stroke-width="1"/>
+  <rect x="${WIDTH - 42}" y="34" width="8" height="8" fill="#2a2008"/>
+
+  <!-- Corner ornaments - bottom left -->
+  <line x1="16" y1="${HEIGHT - 38}" x2="40" y2="${HEIGHT - 38}" stroke="#2a2008" stroke-width="1"/>
+  <line x1="38" y1="${HEIGHT - 16}" x2="38" y2="${HEIGHT - 40}" stroke="#2a2008" stroke-width="1"/>
+  <rect x="34" y="${HEIGHT - 42}" width="8" height="8" fill="#2a2008"/>
+
+  <!-- Corner ornaments - bottom right -->
+  <line x1="${WIDTH - 16}" y1="${HEIGHT - 38}" x2="${WIDTH - 40}" y2="${HEIGHT - 38}" stroke="#2a2008" stroke-width="1"/>
+  <line x1="${WIDTH - 38}" y1="${HEIGHT - 16}" x2="${WIDTH - 38}" y2="${HEIGHT - 40}" stroke="#2a2008" stroke-width="1"/>
+  <rect x="${WIDTH - 42}" y="${HEIGHT - 42}" width="8" height="8" fill="#2a2008"/>
+
+  <!-- ZOLTAR title -->
+  <text x="${cx}" y="68" text-anchor="middle" font-family="'Times New Roman',Georgia,serif" font-size="36" font-weight="bold" fill="#2a2008" letter-spacing="4">ZOLTAR</text>
+
+  <!-- Decorative line under ZOLTAR -->
+  <line x1="50" y1="78" x2="${WIDTH - 50}" y2="78" stroke="#2a2008" stroke-width="1"/>
+
+  <!-- Central oval medallion -->
+  <ellipse cx="${cx}" cy="${HEIGHT / 2 + 10}" rx="105" ry="130" fill="none" stroke="#2a2008" stroke-width="2"/>
+  <ellipse cx="${cx}" cy="${HEIGHT / 2 + 10}" rx="98" ry="123" fill="none" stroke="#2a2008" stroke-width="0.7"/>
+
+  <!-- Zodiac/mystical symbols around the oval -->
+  <text x="${cx}" y="108" text-anchor="middle" font-size="14" fill="#2a2008" opacity="0.4" font-family="serif">&#9788; &#9790; &#10017; &#9733;</text>
+  <text x="${cx - 80}" y="${HEIGHT / 2 + 10}" text-anchor="middle" font-size="10" fill="#2a2008" opacity="0.3" font-family="serif" transform="rotate(-90,${cx - 80},${HEIGHT / 2 + 10})">&#9733; &#9790; &#10022;</text>
+  <text x="${cx + 80}" y="${HEIGHT / 2 + 10}" text-anchor="middle" font-size="10" fill="#2a2008" opacity="0.3" font-family="serif" transform="rotate(90,${cx + 80},${HEIGHT / 2 + 10})">&#10022; &#9790; &#9733;</text>
+
+  <!-- Decorative line above SPEAKS -->
+  <line x1="50" y1="${HEIGHT - 68}" x2="${WIDTH - 50}" y2="${HEIGHT - 68}" stroke="#2a2008" stroke-width="1"/>
+
+  <!-- SPEAKS title -->
+  <text x="${cx}" y="${HEIGHT - 44}" text-anchor="middle" font-family="'Times New Roman',Georgia,serif" font-size="30" font-weight="bold" fill="#2a2008" letter-spacing="6">SPEAKS</text>
+
+  <!-- Quote text styles -->
   <style>
-    .q { font-family: Georgia,serif; font-size: ${fontSize}px; fill: #3d2b1f; text-anchor: middle; }
-    .a { font-family: Georgia,serif; font-size: ${authorFontSize}px; fill: #6b4c2a; text-anchor: middle; font-style: italic; }
+    .q { font-family: Georgia,serif; font-size: ${fontSize}px; fill: #2a2008; text-anchor: middle; }
+    .a { font-family: Georgia,serif; font-size: ${authorFontSize}px; fill: #4a3a18; text-anchor: middle; font-style: italic; }
   </style>
+
+  <!-- Fortune text inside oval -->
 ${textElements}
-  <line x1="55" y1="${HEIGHT - 65}" x2="${WIDTH - 55}" y2="${HEIGHT - 65}" stroke="#c9a84c" stroke-width="0.6" opacity="0.5"/>
-  <text x="${WIDTH / 2}" y="${HEIGHT - 38}" text-anchor="middle" font-size="18" fill="#8b6914" opacity="0.5" font-family="serif">&#9790;</text>
 </svg>`;
 }
 
