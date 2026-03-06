@@ -1,5 +1,4 @@
 import { createRequire } from 'module';
-import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -9,7 +8,7 @@ const quotes = require('../quotes.json');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const filipetaPath = path.join(__dirname, '..', 'public', 'FilipetaQuote.png');
-const bgBuffer = fs.readFileSync(filipetaPath);
+const filipetaBase64 = fs.readFileSync(filipetaPath).toString('base64');
 
 let kv = null;
 try {
@@ -18,6 +17,9 @@ try {
 } catch (e) {
     console.warn('KV not available');
 }
+
+const IMG_WIDTH = 248;
+const IMG_HEIGHT = 494;
 
 function breakText(text, maxChars) {
     const words = text.split(' ');
@@ -36,38 +38,30 @@ function breakText(text, maxChars) {
     return lines;
 }
 
-function escapeXml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function createTextSvg(quote, author, imgWidth, imgHeight) {
+function createSvg(quote, author) {
     const fontSize = 16;
     const authorFontSize = 14;
     const maxChars = 20;
     const lineSpacing = fontSize * 1.4;
 
-    const lines = breakText(escapeXml(quote), maxChars);
-    const authorLine = `— ${escapeXml(author)}`;
+    const lines = breakText(quote, maxChars);
+    const authorLine = `- ${author}`;
 
     const totalTextHeight = (lines.length * lineSpacing) + (authorFontSize * 1.5);
-    const startY = (imgHeight / 2) - (totalTextHeight / 2);
+    const startY = (IMG_HEIGHT / 2) - (totalTextHeight / 2);
 
     let textElements = '';
     lines.forEach((line, index) => {
         const y = startY + (index * lineSpacing);
-        textElements += `<text x="50%" y="${y}" font-size="${fontSize}px" class="q">${line}</text>\n`;
+        textElements += `    <text x="${IMG_WIDTH / 2}" y="${y}" font-size="${fontSize}" font-family="Georgia, serif" fill="#2c2c2c" text-anchor="middle" dominant-baseline="middle">${line}</text>\n`;
     });
 
     const authorY = startY + (lines.length * lineSpacing) + 5;
-    textElements += `<text x="50%" y="${authorY}" font-size="${authorFontSize}px" class="a">${authorLine}</text>\n`;
+    textElements += `    <text x="${IMG_WIDTH / 2}" y="${authorY}" font-size="${authorFontSize}" font-family="Georgia, serif" fill="#333" text-anchor="middle" dominant-baseline="middle" font-style="italic">${authorLine}</text>\n`;
 
-    return `<svg width="${imgWidth}" height="${imgHeight}" xmlns="http://www.w3.org/2000/svg">
-        <style>
-            .q { font-family: Georgia, serif; fill: #2c2c2c; text-anchor: middle; dominant-baseline: middle; }
-            .a { font-family: Georgia, serif; fill: #333; text-anchor: middle; dominant-baseline: middle; font-style: italic; }
-        </style>
-        ${textElements}
-    </svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${IMG_WIDTH}" height="${IMG_HEIGHT}" viewBox="0 0 ${IMG_WIDTH} ${IMG_HEIGHT}">
+  <image href="data:image/png;base64,${filipetaBase64}" width="${IMG_WIDTH}" height="${IMG_HEIGHT}"/>
+${textElements}</svg>`;
 }
 
 export default async function handler(request, response) {
@@ -97,23 +91,11 @@ export default async function handler(request, response) {
             }
         }
 
-        const meta = await sharp(bgBuffer).metadata();
-        const textSvg = createTextSvg(finalQuote.quote, finalQuote.source, meta.width, meta.height);
+        const svg = createSvg(finalQuote.quote, finalQuote.source);
 
-        const finalImage = await sharp(bgBuffer)
-            .composite([{
-                input: Buffer.from(textSvg),
-                top: 0,
-                left: 0
-            }])
-            .png()
-            .toBuffer();
-
-        response.setHeader('Content-Type', 'image/png');
+        response.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
         response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        response.setHeader('Pragma', 'no-cache');
-        response.setHeader('Expires', '0');
-        return response.status(200).end(finalImage);
+        return response.status(200).send(svg);
 
     } catch (error) {
         console.error("ERRO NO QUOTE:", error);
