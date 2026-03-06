@@ -10,6 +10,10 @@
       "includeFiles": "{public/**,fonts/**}"
     },
     "api/fortune.js": {
+      "maxDuration": 10,
+      "includeFiles": "public/fortunes/**"
+    },
+    "api/fortune-image.js": {
       "maxDuration": 30,
       "includeFiles": "{public/**,fonts/**}"
     }
